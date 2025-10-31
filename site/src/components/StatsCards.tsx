@@ -85,7 +85,7 @@ export default function StatsCards({ data }: StatsCardsProps) {
       icon: Twitter,
       items: [
         {
-          label: "Followers",
+          label: "Agg_total_Followers",
           value: data?.twitterActivity?.followers?.toLocaleString() || "—",
         },
         {

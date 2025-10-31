@@ -1,97 +1,199 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ArrowRight, Zap, Database, Users } from "lucide-react";
+import MatrixLoader from "@/components/MatrixLoader";
+import TechFingerprintCard from "@/components/TechFingerprintCard";
+import StatsCards from "@/components/StatsCards";
+import AIInsightPanel from "@/components/AIInsightPanel";
+import ExportButtons from "@/components/ExportButtons";
+import { Search, Sparkles } from "lucide-react";
+import { useAnalyzeProject } from "@/hooks/useAnalyzeProject";
 
-export default function Home() {
-  const router = useRouter();
+export default function ScannerPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { data, loading, analyze } = useAnalyzeProject();
+
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) return;
+
+    setError(null);
+
+    await analyze(query);
+  };
+
+  const handleTrySample = (projectName: string) => {
+    setSearchQuery(projectName);
+    handleSearch(projectName);
+  };
 
   return (
-    <div className="min-h-screen bg-[#111111]">
+    <div className="min-h-screen bg-[#111111] overflow-x-hidden">
       <Header />
-      
-      <main className="pt-24">
-        {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-6 py-32 md:py-40">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#54FE6D]/10 border border-[#54FE6D]/20 mb-8">
-              <span className="accent-glow text-sm font-medium tracking-wide">
-                AI-POWERED INTELLIGENCE
-              </span>
+
+      <main className="pt-24 pb-20 ">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-3xl mx-auto mb-16">
+            <div className="text-center mb-10">
+              <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">
+                BuildIntel <span className="accent-glow">Scanner</span>
+              </h1>
+              <p className="text-lg text-[#F7F6F7]/70">
+                Enter project name to reveal its technology stack, funding and
+                traction
+              </p>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-semibold mb-6 leading-tight tracking-tight">
-              Discover What Builders
-              <br />
-              <span className="accent-glow">Are Really Using.</span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-[#F7F6F7]/80 mb-12 max-w-2xl mx-auto font-light">
-              AI-powered tool that reveals technology stacks, teams, and traction
-              of crypto and web projects.
-            </p>
-
-            <button
-              onClick={() => router.push("/scanner")}
-              className="btn-primary px-8 py-4 text-lg font-semibold inline-flex items-center gap-3"
-            >
-              Scan a Project
-              <ArrowRight size={20} />
-            </button>
-
-            <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="data-card p-8 text-left">
-                <div className="bg-[#54FE6D]/10 text-[#54FE6D] p-3 inline-flex rounded-lg mb-4">
-                  <Zap size={24} />
+            <div className="data-card p-6 space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleSearch(searchQuery)
+                    }
+                    placeholder="Enter ONLY project name..."
+                    className="input-field w-full px-4 py-3 text-base"
+                  />
+                  <Search
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#F7F6F7]/40"
+                    size={20}
+                  />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Tech Stack Analysis</h3>
-                <p className="text-[#F7F6F7]/70 text-sm leading-relaxed">
-                  Reveal frontend, backend, blockchain, and infrastructure choices
-                </p>
+                <button
+                  onClick={() => handleSearch(searchQuery)}
+                  disabled={loading || !searchQuery.trim()}
+                  className="btn-primary px-8 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Scan
+                </button>
               </div>
 
-              <div className="data-card p-8 text-left">
-                <div className="bg-[#54FE6D]/10 text-[#54FE6D] p-3 inline-flex rounded-lg mb-4">
-                  <Users size={24} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Team Insights</h3>
-                <p className="text-[#F7F6F7]/70 text-sm leading-relaxed">
-                  Discover team size, activity, and contributor metrics
-                </p>
-              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="text-[#F7F6F7]/50 text-sm">try:</div>
 
-              <div className="data-card p-8 text-left">
-                <div className="bg-[#54FE6D]/10 text-[#54FE6D] p-3 inline-flex rounded-lg mb-4">
-                  <Database size={24} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Traction Data</h3>
-                <p className="text-[#F7F6F7]/70 text-sm leading-relaxed">
-                  GitHub stats, funding info, and social engagement
-                </p>
+                {["Sentient", "Zora", "Base"].map((project) => (
+                  <button
+                    key={project}
+                    onClick={() => handleTrySample(project.toLowerCase())}
+                    className="px-3 py-1.5 rounded-md bg-[#54FE6D]/5 border border-[#54FE6D]/20 text-[#54FE6D] text-sm font-medium hover:bg-[#54FE6D]/10 transition-colors flex items-center gap-1.5"
+                  >
+                    <Sparkles size={14} />
+                    {project}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        </section>
 
-        {/* CTA Section */}
-        <section className="max-w-7xl mx-auto px-6 pb-32">
-          <div className="data-card p-12 md:p-16 text-center max-w-3xl mx-auto bg-gradient-to-br from-[#232323] to-[#1a1a1a]">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-4">
-              Ready to see behind the scenes?
-            </h2>
-            <p className="text-lg text-[#F7F6F7]/70 mb-8">
-              Get instant insights powered by Sentient ROMA
-            </p>
-            <button
-              onClick={() => router.push("/scanner")}
-              className="btn-primary px-8 py-3 text-base font-semibold"
-            >
-              Start Scanning Now
-            </button>
-          </div>
-        </section>
+          {loading && (
+            <div className="flex justify-center py-16">
+              <MatrixLoader />
+            </div>
+          )}
+
+          {error && (
+            <div className="max-w-3xl mx-auto">
+              <div className="data-card bg-red-500/5 border-red-500/20 p-6 text-center">
+                <p className="text-[#F7F6F7]/90 font-medium">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {data && !loading && (
+            <div id="results-container" className="max-w-6xl mx-auto space-y-6">
+              <div className="data-card p-6 fade-up">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <h2 className="text-3xl font-semibold mb-2">
+                      {data.projectName}
+                    </h2>
+
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 text-sm">
+                      {data?.url?.map((url: string, idx: number) => (
+                        <a
+                          key={`web-${idx}`}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#54FE6D] hover:underline"
+                        >
+                          {url}
+                        </a>
+                      ))}
+                      {data.url?.length > 3 && (
+                        <span className="text-[#F7F6F7]/50">
+                          +{data.url.length - 3} more
+                        </span>
+                      )}
+
+                      {data?.discovery?.githubs
+                        ?.slice(0, 2)
+                        .map((gh: string, idx: number) => (
+                          <a
+                            key={`gh-${idx}`}
+                            href={gh}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#54FE6D] hover:underline"
+                          >
+                            {gh.replace("https://", "").replace("www.", "")}
+                          </a>
+                        ))}
+                      {data?.discovery?.githubs?.length > 2 && (
+                        <span className="text-[#F7F6F7]/50">
+                          +{data?.discovery?.githubs?.length - 2} more
+                        </span>
+                      )}
+
+                      {data.discovery?.twitters
+                        ?.slice(0, 2)
+                        .map((tw: string, idx: number) => (
+                          <a
+                            key={`tw-${idx}`}
+                            href={tw}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#54FE6D] hover:underline"
+                          >
+                            {tw.replace("https://twitter.com/", "@")}
+                          </a>
+                        ))}
+                      {data.discovery?.twitters?.length > 2 && (
+                        <span className="text-[#F7F6F7]/50">
+                          +{data?.discovery?.twitters?.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-left md:text-right">
+                    <div className="text-xs text-[#F7F6F7]/50 mb-1">
+                      Analyzed
+                    </div>
+                    <div className="font-medium text-sm">
+                      {new Date(data.analyzedAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <TechFingerprintCard data={data} />
+
+              <StatsCards data={data} />
+
+              <AIInsightPanel data={data} />
+
+              <div className="flex justify-center pt-4">
+                <ExportButtons data={data} />
+              </div>
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />

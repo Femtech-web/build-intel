@@ -88,8 +88,6 @@ export default function ExportButtons({ data }: ExportButtonsProps) {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-      // pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
       pdf.save(`${data?.projectName.replace(/\s+/g, "-")}-analysis.pdf`);
 
       toast.success("PDF exported successfully!");
@@ -105,7 +103,6 @@ export default function ExportButtons({ data }: ExportButtonsProps) {
     try {
       const url = `${window.location.origin}/scanner?project=${encodeURIComponent(data?.projectName ?? "scanner")}`;
 
-      // Try using the Web Share API if available
       if (navigator.share) {
         await navigator.share({
           title: `${data?.projectName} - BuildIntel Analysis`,
@@ -114,12 +111,10 @@ export default function ExportButtons({ data }: ExportButtonsProps) {
         });
         toast.success("Shared successfully!");
       } else {
-        // Fallback to clipboard
         await navigator.clipboard.writeText(url);
         toast.success("Link copied to clipboard!");
       }
     } catch (error) {
-      // If share was cancelled or clipboard failed, try clipboard as fallback
       try {
         const url = `${window.location.origin}/scanner?project=${encodeURIComponent(data?.projectName ?? "scanner")}`;
         await navigator.clipboard.writeText(url);
