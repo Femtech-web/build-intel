@@ -38,7 +38,6 @@ export function useAnalyzeProject() {
 
       const data = await res.json();
       const mapped = mapBackendToProjectAnalysis(data);
-      console.log("🚀 analyze response:", mapped);
       setData(mapped);
     } catch (err: any) {
       console.error("❌ analyze error:", err);
