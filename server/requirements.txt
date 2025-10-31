@@ -1,0 +1,9 @@
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+sentient-agent-framework>=0.2.0
+PyGithub>=2.0.0
+httpx>=0.25.0
+tavily-python>=0.3.0
+
