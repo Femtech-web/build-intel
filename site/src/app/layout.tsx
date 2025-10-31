@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://build-intel-seven.vercel.app/",
     siteName: "BuildIntel",
-    title: "BuildIntel — Discover What Builders Are Really Using",
+    title: "BuildIntel — Discover What Projects Are Really Using",
     description:
       "Instantly analyze any Web3 project. See its real stack, traction, and on-chain presence — powered by AI and open data.",
     images: [
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@DefiPreacherr",
     creator: "@DefiPreacherr",
-    title: "BuildIntel — Discover What Builders Are Really Using",
+    title: "BuildIntel — Discover What Projects Are Really Using",
     description:
       "AI-powered truth engine for discovering what Web3 projects are built with — their tech stack, traction, and team activity.",
     images: ["/open-graph.png"],
