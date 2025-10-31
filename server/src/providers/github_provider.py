@@ -237,7 +237,6 @@ class GitHubProvider:
             "repos": repos_data,
         }
 
-        logger.info(f"📊 Aggregated GitHub stats: {final_stats}")
         return final_stats
 
     # ─────────────────────────────
