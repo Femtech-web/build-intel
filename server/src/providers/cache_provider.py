@@ -1,6 +1,7 @@
 import time
 import logging
 import json
+import os
 from redis import asyncio as aioredis # type: ignore
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class CacheProvider:
     Falls back to in-memory cache if Redis is unavailable.
     """
 
-    def __init__(self, redis_url: str = "redis://localhost:6379", default_ttl: int = 3600):
+    def __init__(self, redis_url: str = os.getenv("REDIS_URL"), default_ttl: int = 3600):
         self._cache = {}
         self.default_ttl = default_ttl
         self.redis_url = redis_url

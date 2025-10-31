@@ -5,6 +5,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 class LLMProvider:
     """LLM provider using Fireworks.ai to generate project insights."""
 

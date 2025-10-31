@@ -6,7 +6,7 @@ from typing import List, Dict
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
-TAVILY_SEARCH_URL = "https://api.tavily.com/search"
+TAVILY_SEARCH_URL = os.getenv("TAVILY_BASE_URL", "https://api.tavily.com/search")
 
 # Crypto/web project–common TLDs
 PREFERRED_TLDS = [

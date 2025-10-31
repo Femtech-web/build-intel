@@ -10,8 +10,11 @@ import re
 
 logger = logging.getLogger(__name__)
 
-SERP_API_URL = "https://serpapi.com/search.json"
-TWITTER_API_URL = "https://api.x.com/2/users/by/username/{}"
+SERP_API_URL = os.getenv("SERP_BASE_URL", "https://serpapi.com/search.json")
+TWITTER_API_URL = os.getenv("TWITTER_API_URL", "https://api.x.com/2/users/by/username/{}") 
+TWITTER_BASE_URL = os.getenv("TWITTER_BASE_URL", "https://x.com")
+TAVILY_API_URL = os.getenv("TAVILY_BASE_URL", "https://api.tavily.com/search")
+DUCKDUCKGO_API_URL = os.getenv("DUCKDUCKGO_API_URL", "https://duckduckgo.com/html/")
 TWITTER_USER_FIELDS = "description,public_metrics,profile_image_url"
 
 
@@ -296,13 +299,12 @@ class TwitterProvider:
             return None
 
         try:
-            url = "https://api.tavily.com/search"
             payload = {
                 "api_key": tavily_key,
                 "query": f"Twitter profile @{username} site:x.com OR site:twitter.com",
                 "max_results": 5,
             }
-            resp = await client.post(url, json=payload)
+            resp = await client.post(TAVILY_API_URL, json=payload)
             if resp.status_code != 200:
                 logger.warning(f"⚠️ Tavily fallback failed for @{username} ({resp.status_code})")
                 return None
@@ -341,7 +343,7 @@ class TwitterProvider:
         """Last-resort fallback: DuckDuckGo HTML scrape (no key)."""
         try:
             q = f"site:twitter.com @{username}"
-            url = f"https://duckduckgo.com/html/?q={q}"
+            url = f"{DUCKDUCKGO_API_URL}?q={q}"
             resp = await client.get(url)
             if resp.status_code != 200:
                 return None
@@ -355,7 +357,7 @@ class TwitterProvider:
             return {
                 "username": username,
                 "bio": "Fetched via DuckDuckGo search (limited details)",
-                "profile_url": f"https://x.com/{username}",
+                "profile_url": f"{TWITTER_BASE_URL}/{username}",
                 "source": "duckduckgo",
             }
         except Exception as e:

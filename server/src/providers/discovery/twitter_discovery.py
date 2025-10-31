@@ -7,8 +7,8 @@ from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
-SERPAPI_URL = "https://serpapi.com/search.json"
-TAVILY_SEARCH_URL = "https://api.tavily.com/search"
+SERPAPI_URL = os.getenv("SERP_BASE_URL", "https://serpapi.com/search.json")
+TAVILY_SEARCH_URL = os.getenv("TAVILY_BASE_URL", "https://api.tavily.com/search")
 
 
 def _normalize_twitter_url(u: str) -> str | None:
@@ -23,16 +23,14 @@ def _normalize_twitter_url(u: str) -> str | None:
         return None
     # Accept twitter.com or x.com (also mobile.twitter.com)
     if "twitter.com" in netloc or "x.com" in netloc:
-        # If path contains extra segments (like status/...), take first piece
         handle = path.split("/")[0]
         scheme = "https"
-        # prefer x.com when provided otherwise use twitter.com domain only if netloc contains it
         domain = "x.com" if "x.com" in netloc else "twitter.com"
         return f"{scheme}://{domain}/{handle}"
-    # Some results might be @handle or plain handle — normalize to twitter.com
+
     if u.startswith("@"):
         return f"https://twitter.com/{u.lstrip('@')}"
-    # if just a username without domain
+
     if "/" not in u and " " not in u and len(u) <= 50:
         return f"https://twitter.com/{u}"
     return None
@@ -107,18 +105,17 @@ class TwitterDiscovery:
         for key in ("users", "data", "organic_results", "timeline"):
             items = twitter_results.get(key) or data.get(key) or []
             if isinstance(items, dict):
-                # unwrap dict-like responses
                 items = [items]
             for it in items:
                 if not it:
                     continue
-                # try multiple common fields
+
                 candidate = it.get("profile_url") or it.get("url") or it.get("permalink") or it.get("username")
                 if candidate:
                     norm = _normalize_twitter_url(candidate)
                     if norm and norm not in urls:
                         urls.append(norm)
-                # if a username field exists
+
                 uname = it.get("username") or it.get("screen_name")
                 if uname:
                     norm = _normalize_twitter_url(uname)
@@ -234,7 +231,7 @@ class TwitterDiscovery:
                 else:
                     logger.debug("TwitterDiscovery: HEAD check failed for %s", u)
 
-        final = validated or unique  # prefer validated ones, else return candidates
+        final = validated or unique  
         logger.info("TwitterDiscovery: returning %d profile(s) for %s", len(final[:limit]), project_name)
 
         scored = sorted(final, key=lambda u: _score_twitter_url(project_name, u), reverse=True)

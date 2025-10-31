@@ -166,9 +166,9 @@ class BuildIntelAgent(AbstractAgent):
             logger.info("ℹ️ No aggregation tasks to run (no discovered urls).")
 
         await response_handler.emit_json("AGGREGATION", {
-            "github": github_stats,
-            "twitter": twitter_stats,
-            "funding": funding_info
+          "github": github_stats,
+          "twitter": twitter_stats,
+          "funding": funding_info
         })
 
         # 4️⃣ Compute composite activity metrics
@@ -178,22 +178,22 @@ class BuildIntelAgent(AbstractAgent):
         # 5️⃣ Generate Insight
         await response_handler.emit_text_block("STATUS", "🧠 Generating insights...")
         try:
-            insight = await self.llm.generate_insight(project_name, github_stats, twitter_stats, funding_info)
+          insight = await self.llm.generate_insight(project_name, github_stats, twitter_stats, funding_info)
         except Exception as e:
-            logger.error(f"Insight generation failed: {e}", exc_info=True)
-            insight = f"⚠️ Insight generation failed: {str(e)}"
+          logger.error(f"Insight generation failed: {e}", exc_info=True)
+          insight = f"⚠️ Insight generation failed: {str(e)}"
 
         # 6 Final structured result
         result = {
-            "project": project_name,
-            "discovery": discovered,
-            "aggregation": {
-                "github": github_stats,
-                "twitter": twitter_stats,
-                "funding": funding_info
-            },
-            "activity_metrics": activity_metrics,
-            "insight": insight
+          "project": project_name,
+          "discovery": discovered,
+          "aggregation": {
+            "github": github_stats,
+            "twitter": twitter_stats,
+            "funding": funding_info
+          },
+          "activity_metrics": activity_metrics,
+          "insight": insight
         }
 
         # 6️⃣ Cache results
@@ -205,71 +205,71 @@ class BuildIntelAgent(AbstractAgent):
         await response_handler.complete()
 
         logger.info(f"✅ Analysis fully complete for {project_name}")
-        logger.info(f"📦 Final result: {result}")
+
     
     def _compute_activity_metrics(self, github_stats, twitter_stats, funding_info):
         """
         Compute composite activity scores based on multiple sources.
         Returns a dict like:
         {
-            "github_score": 82,
-            "twitter_score": 75,
-            "community_score": 80,
-            "overall_score": 79
+          "github_score": 82,
+          "twitter_score": 75,
+          "community_score": 80,
+          "overall_score": 79
         }
         """
         if not github_stats:
-            github_score = 0
+          github_score = 0
         else:
-            total_commits = github_stats.get("total_commits", 0)
-            total_stars = github_stats.get("total_stars", 0)
+          total_commits = github_stats.get("total_commits", 0)
+          total_stars = github_stats.get("total_stars", 0)
 
-            # Compute recency weighting from repos
-            last_commits = []
-            for repo in github_stats.get("repos", []):
-                try:
-                    date = repo["activity"]["last_commit"]["date"]
-                    last_commits.append(date)
-                except Exception:
-                    pass
+          # Compute recency weighting from repos
+          last_commits = []
+          for repo in github_stats.get("repos", []):
+            try:
+              date = repo["activity"]["last_commit"]["date"]
+              last_commits.append(date)
+            except Exception:
+              pass
 
-            recency_bonus = 0
-            if last_commits:
-                # recent commits (last 30 days = +20 bonus)
-                from datetime import datetime, timezone
-                recent_count = sum(
-                    1 for d in last_commits
-                    if (datetime.now(timezone.utc) - datetime.fromisoformat(d)).days < 30
-                )
-                recency_bonus = min(20, recent_count * 2)
-
-            github_score = min(
-                100,
-                int((total_commits / 100) + (total_stars / 200) + recency_bonus)
+          recency_bonus = 0
+          if last_commits:
+            # recent commits (last 30 days = +20 bonus)
+            from datetime import datetime, timezone
+            recent_count = sum(
+              1 for d in last_commits
+              if (datetime.now(timezone.utc) - datetime.fromisoformat(d)).days < 30
             )
+            recency_bonus = min(20, recent_count * 2)
+
+          github_score = min(
+            100,
+            int((total_commits / 100) + (total_stars / 200) + recency_bonus)
+          )
 
         # ─── Twitter Score ─────────────────────────────
         twitter_score = 0
         if twitter_stats and isinstance(twitter_stats, list):
-            followers = [
-                tw.get("followers") or 0 for tw in twitter_stats if isinstance(tw, dict)
-            ]
-            max_followers = max(followers) if followers else 0
-            twitter_score = min(100, int(max_followers / 200))  # heuristic
-            # optionally factor tweets
-            tweets = [
-                tw.get("tweets") or 0 for tw in twitter_stats if isinstance(tw, dict)
-            ]
-            avg_tweets = sum(tweets) / len(tweets) if tweets else 0
-            twitter_score += min(20, int(avg_tweets / 1000))
-            twitter_score = min(100, twitter_score)
+          followers = [
+            tw.get("followers") or 0 for tw in twitter_stats if isinstance(tw, dict)
+          ]
+          max_followers = max(followers) if followers else 0
+          twitter_score = min(100, int(max_followers / 200))  # heuristic
+          # optionally factor tweets
+          tweets = [
+            tw.get("tweets") or 0 for tw in twitter_stats if isinstance(tw, dict)
+          ]
+          avg_tweets = sum(tweets) / len(tweets) if tweets else 0
+          twitter_score += min(20, int(avg_tweets / 1000))
+          twitter_score = min(100, twitter_score)
 
         # ─── Community Score ──────────────────────────
         community_score = int((github_score * 0.6) + (twitter_score * 0.4))
 
         # ─── Overall Score ────────────────────────────
         overall_score = int(
-            (github_score + twitter_score + community_score) / 3
+          (github_score + twitter_score + community_score) / 3
         )
 
         return {
@@ -281,37 +281,37 @@ class BuildIntelAgent(AbstractAgent):
 
     
     async def analyze_project(self, project_name: str):
-        """Run the agent directly and capture its output."""
+      """Run the agent directly and capture its output."""
 
-        # 1️⃣ Setup a fake session
-        session_obj = MockSessionObject()
-        session = DefaultSession(session_obj)
+      # 1️⃣ Setup a fake session
+      session_obj = MockSessionObject()
+      session = DefaultSession(session_obj)
 
-        # 2️⃣ Create a simple response queue
-        queue = asyncio.Queue()
+      # 2️⃣ Create a simple response queue
+      queue = asyncio.Queue()
 
-        # 3️⃣ Hook + Identity + ResponseHandler
-        hook = DefaultHook(queue)
-        identity = Identity(id=session.processor_id, name=self.name)
-        handler = DefaultResponseHandler(identity, hook)
+      # 3️⃣ Hook + Identity + ResponseHandler
+      hook = DefaultHook(queue)
+      identity = Identity(id=session.processor_id, name=self.name)
+      handler = DefaultResponseHandler(identity, hook)
 
-        # 4️⃣ Prepare a Query
-        query = Query(id=str(ULID()), prompt=project_name)
+      # 4️⃣ Prepare a Query
+      query = Query(id=str(ULID()), prompt=project_name)
 
-        # 5️⃣ Run the assist logic
-        asyncio.create_task(self.assist(session, query, handler))
+      # 5️⃣ Run the assist logic
+      asyncio.create_task(self.assist(session, query, handler))
 
-        # 6️⃣ Collect events from queue
-        results = {}
-        while True:
-            event = await queue.get()
-            results[event.event_name] = (
-                event.model_dump() if hasattr(event, "model_dump") else str(event)
-            )
-            queue.task_done()
+      # 6️⃣ Collect events from queue
+      results = {}
+      while True:
+        event = await queue.get()
+        results[event.event_name] = (
+          event.model_dump() if hasattr(event, "model_dump") else str(event)
+        )
+        queue.task_done()
 
-            # The DoneEvent signals completion
-            if event.__class__.__name__ == "DoneEvent":
-                break
+        # The DoneEvent signals completion
+        if event.__class__.__name__ == "DoneEvent":
+          break
 
-        return json.loads(json.dumps(results, default=str))
+      return json.loads(json.dumps(results, default=str))

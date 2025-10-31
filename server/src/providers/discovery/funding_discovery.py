@@ -8,8 +8,8 @@ from typing import List
 
 logger = logging.getLogger(__name__)
 
-TAVILY_SEARCH_URL = "https://api.tavily.com/search"
-GITHUB_API = "https://api.github.com"
+TAVILY_SEARCH_URL = os.getenv("TAVILY_BASE_URL", "https://api.tavily.com/search")
+GITHUB_API = os.getenv("GITHUB_API_URL", "https://api.github.com") 
 
 
 class FundingDiscovery:

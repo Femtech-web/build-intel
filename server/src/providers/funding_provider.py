@@ -9,6 +9,9 @@ from src.providers.llm_provider import LLMProvider
 
 logger = logging.getLogger(__name__)
 
+DEFILLAMA_URL = os.getenv("DEFILLAMA_API_URL", "https://api.llama.fi")
+COINGECKO_URL = os.getenv("COINGECKO_API_URL", "https://api.coingecko.com/api/v3")
+
 class FundingProvider:
     """Aggregates and interprets funding data for a given project."""
 
@@ -71,7 +74,7 @@ class FundingProvider:
             except Exception:
                 pass  # ignore malformed cache
 
-        url = "https://api.llama.fi/protocols"
+        url = f"{DEFILLAMA_URL}/protocols"
         try:
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.get(url)
@@ -117,7 +120,7 @@ class FundingProvider:
                 logger.warning(f"⚠️ Matched entry has no slug for {project_name}")
                 return None
 
-            url = f"https://api.llama.fi/protocol/{slug}"
+            url = f"{DEFILLAMA_URL}/protocol/{slug}"
             async with httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
                 resp = await client.get(url)
                 logger.info(f"🌐 DeFiLlama lookup for {url} → {resp.status_code}")
@@ -150,7 +153,7 @@ class FundingProvider:
     async def _try_coingecko(self, project_name: str) -> Optional[Dict[str, Any]]:
         """Fetch funding/market info from CoinGecko API (trimmed version)."""
         try:
-            search_url = f"https://api.coingecko.com/api/v3/search?query={project_name}"
+            search_url = f"{COINGECKO_URL}/search?query={project_name}"
             async with httpx.AsyncClient(timeout=10) as client:
                 search_resp = await client.get(search_url)
                 if search_resp.status_code != 200:
@@ -161,7 +164,7 @@ class FundingProvider:
                     return None
 
                 coin_id = results[0]["id"]
-                detail_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
+                detail_url = f"{COINGECKO_URL}/coins/{coin_id}"
                 detail_resp = await client.get(detail_url)
                 if detail_resp.status_code != 200:
                     return None
@@ -195,7 +198,7 @@ class FundingProvider:
     async def _try_serpapi(self, project_name: str) -> Optional[Dict[str, Any]]:
         """Fallback search using SerpAPI for funding announcements."""
         try:
-            url = "https://serpapi.com/search.json"
+            url = os.getenv("SERP_BASE_URL", "https://serpapi.com/search.json")
             params = {
                 "engine": "google",
                 "q": f"{project_name} funding site:crunchbase.com OR site:techcrunch.com OR site:cointelegraph.com",

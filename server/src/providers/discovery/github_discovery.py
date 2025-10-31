@@ -5,7 +5,7 @@ from typing import List
 
 logger = logging.getLogger(__name__)
 
-GITHUB_API = "https://api.github.com"
+GITHUB_API = os.getenv("GITHUB_API_URL", "https://api.github.com") 
 
 class GitHubDiscovery:
     """High-accuracy GitHub repo discovery for a given project name."""
